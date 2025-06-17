@@ -103,33 +103,34 @@
       render(teamKey);
     }
 
-    function assignNext(teamKey) {
-      let team = teams[teamKey];
-      if (team[0].available) {
-        const person = team.shift();
-        team.push(person);
-        showAssignment(`${person.name} is assigned the ticket.`);
-      } else {
-        let assignedIndex = -1;
-        for (let i = 1; i < team.length; i++) {
-          if (team[i].available) {
-            assignedIndex = i;
-            break;
-          }
-        }
+function assignNext(teamKey) {
+  let team = teams[teamKey];
 
-        if (assignedIndex !== -1) {
-          const assignedPerson = team.splice(assignedIndex, 1)[0];
-          team.push(assignedPerson);
-          showAssignment(`${assignedPerson.name} is assigned the ticket (top person unavailable).`);
-        } else {
-          showAssignment("No available team members.");
-        }
+  if (team[0].available) {
+    const person = team.shift();
+    team.push(person);
+    showAssignment(`${person.name} is assigned the ticket.`);
+  } else {
+    let assignedIndex = -1;
+    for (let i = 1; i < team.length; i++) {
+      if (team[i].available) {
+        assignedIndex = i;
+        break;
       }
-
-      db.ref('teams').set(teams);
-      render(teamKey);
     }
+
+    if (assignedIndex !== -1) {
+      const assignedPerson = team.splice(assignedIndex, 1)[0];
+      team.push(assignedPerson);
+      showAssignment(`${assignedPerson.name} is assigned the ticket (top person unavailable).`);
+    } else {
+      showAssignment("No available team members.");
+    }
+  }
+
+  db.ref('teams').set(teams);
+  render(teamKey);
+}
 
     function showAssignment(message) {
       document.getElementById("assignment-msg").textContent = message;

@@ -2,49 +2,87 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Support Ticket Rotation</title>
+  <title>Support Rotation</title>
   <style>
-    body { font-family: Arial; padding: 20px; }
+    body { font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: auto; }
     .list { margin: 20px 0; }
     .list ul { list-style-type: none; padding: 0; }
-    .list li { padding: 5px; }
+    .list li { padding: 5px; cursor: pointer; }
     .top-name { font-weight: bold; color: green; }
     .unavailable { color: red; text-decoration: line-through; }
+    button { margin-top: 10px; }
   </style>
+
+  <!-- Firebase via CDN -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js"></script>
+
+  <script>
+    // ✅ Your Firebase Config (tailored)
+    const firebaseConfig = {
+      apiKey: "AIzaSyBI1IvsSOGRXss0dTceJQDnkoXfFdhkinc",
+      authDomain: "support-rotation-app.firebaseapp.com",
+      projectId: "support-rotation-app",
+      storageBucket: "support-rotation-app.firebasestorage.app",
+      messagingSenderId: "559311225453",
+      appId: "1:559311225453:web:15e121172a5a042ea8b564",
+      measurementId: "G-DR1V84QY22"
+    };
+
+    // Initialize Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    firebase.analytics();
+  </script>
 </head>
 <body>
-
   <h2>Support Rotation</h2>
 
   <div class="list">
-    <h3>Team A</h3>
+    <h3>Team DEMS</h3>
     <ul id="teamA"></ul>
-    <button onclick="assignNext('A')">Assign Next Ticket (Team A)</button>
+    <button onclick="assignNext('A')">Assign Next Ticket (DEMS)</button>
   </div>
 
   <div class="list">
-    <h3>Team B</h3>
+    <h3>Team Aware</h3>
     <ul id="teamB"></ul>
-    <button onclick="assignNext('B')">Assign Next Ticket (Team B)</button>
+    <button onclick="assignNext('B')">Assign Next Ticket (Aware)</button>
   </div>
 
+  <div id="assignment-msg" style="margin-top: 20px; font-weight: bold;"></div>
+
   <script>
-    const teams = {
-      A: [
-        { name: 'Lynnette', available: true },
-        { name: 'Dack', available: true },
-        { name: 'Shay', available: true },
-        { name: 'Dami', available: true },
-        { name: 'Anna', avialable: true }
-      ],
-      B: [
-        { name: 'Jake', available: true },
-        { name: 'Tyler', available: true },
-        { name: 'David', available: true },
-        { name: 'Zachary', avialable: true },
-        { name: 'Paul', avialable: true }
-      ]
-    };
+    let teams = { A: [], B: [] };
+
+    // 🔁 Load initial or live team data
+    db.ref('teams').on('value', (snapshot) => {
+      if (snapshot.exists()) {
+        teams = snapshot.val();
+        render('A');
+        render('B');
+      } else {
+        // First-time default initialization
+        teams = {
+          A: [
+            { name: 'Lynnette', available: true },
+            { name: 'Dack', available: true },
+            { name: 'Shay', available: true },
+            { name: 'Dami', available: true },
+            { name: 'Anna', available: true }
+          ],
+          B: [
+            { name: 'Jake', available: true },
+            { name: 'Tyler', available: true },
+            { name: 'David', available: true },
+            { name: 'Zachary', available: true },
+            { name: 'Paul', available: true }
+          ]
+        };
+        db.ref('teams').set(teams);
+      }
+    });
 
     function render(teamKey) {
       const list = document.getElementById(`team${teamKey}`);
@@ -61,54 +99,40 @@
 
     function toggleAvailability(teamKey, index) {
       teams[teamKey][index].available = !teams[teamKey][index].available;
-      render(teamKey);
+      db.ref('teams').set(teams);
     }
 
-function assignNext(teamKey) {
-  let team = teams[teamKey];
+    function assignNext(teamKey) {
+      let team = teams[teamKey];
 
-  if (team[0].available) {
-    // Top person is available: rotate them to bottom
-    const person = team.shift();
-    team.push(person);
-    showAssignment(`${person.name} is assigned the ticket.`);
-  } else {
-    // Top person is unavailable: find next available (starting at index 1)
-    let assignedIndex = -1;
-    for (let i = 1; i < team.length; i++) {
-      if (team[i].available) {
-        assignedIndex = i;
-        break;
+      if (team[0].available) {
+        const person = team.shift();
+        team.push(person);
+        showAssignment(`${person.name} is assigned the ticket.`);
+      } else {
+        let assignedIndex = -1;
+        for (let i = 1; i < team.length; i++) {
+          if (team[i].available) {
+            assignedIndex = i;
+            break;
+          }
+        }
+
+        if (assignedIndex !== -1) {
+          const assignedPerson = team.splice(assignedIndex, 1)[0];
+          team.push(assignedPerson);
+          showAssignment(`${assignedPerson.name} is assigned the ticket (top person unavailable).`);
+        } else {
+          showAssignment("No available team members.");
+        }
       }
+
+      db.ref('teams').set(teams);
     }
 
-    if (assignedIndex !== -1) {
-      const assignedPerson = team.splice(assignedIndex, 1)[0]; // Remove from current spot
-      team.push(assignedPerson); // Add to end
-      showAssignment(`${assignedPerson.name} is assigned the ticket (top person unavailable).`);
-    } else {
-      showAssignment("No available team members.");
-    }
-  }
-
-  render(teamKey);
-}
     function showAssignment(message) {
-  let div = document.getElementById("assignment-msg");
-  if (!div) {
-    div = document.createElement("div");
-    div.id = "assignment-msg";
-    div.style.marginTop = "20px";
-    div.style.fontWeight = "bold";
-    document.body.appendChild(div);
-  }
-  div.textContent = message;
-}
-
-    // Initial render
-    render('A');
-    render('B');
+      document.getElementById("assignment-msg").textContent = message;
+    }
   </script>
-
 </body>
 </html>

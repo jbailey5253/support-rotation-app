@@ -68,17 +68,40 @@
     }
 
     button {
-      background-color: #2563eb;
-      color: white;
       border: none;
       border-radius: 6px;
-      padding: 8px 12px;
+      padding: 6px 10px;
       cursor: pointer;
-      transition: background-color 0.2s ease;
+      font-size: 14px;
+      font-weight: 500;
     }
 
-    button:hover {
+    .assign-button {
+      background-color: #2563eb;
+      color: white;
+      margin-top: 10px;
+    }
+
+    .assign-button:hover {
       background-color: #1d4ed8;
+    }
+
+    .available {
+      background-color: #10b981;
+      color: white;
+    }
+
+    .available:hover {
+      background-color: #059669;
+    }
+
+    .unavailable-btn {
+      background-color: #ef4444;
+      color: white;
+    }
+
+    .unavailable-btn:hover {
+      background-color: #dc2626;
     }
 
     #assignment {
@@ -106,12 +129,12 @@
     <div class="team" id="teamA">
       <h2>DEMS</h2>
       <ul id="listA"></ul>
-      <button onclick="assignNext('A')">Assign Next</button>
+      <button class="assign-button" onclick="assignNext('A')">Assign Next</button>
     </div>
     <div class="team" id="teamB">
       <h2>Aware</h2>
       <ul id="listB"></ul>
-      <button onclick="assignNext('B')">Assign Next</button>
+      <button class="assign-button" onclick="assignNext('B')">Assign Next</button>
     </div>
   </div>
   <p id="assignment"></p>
@@ -168,10 +191,13 @@
       team.forEach((person, index) => {
         const li = document.createElement('li');
         li.className = person.available ? '' : 'unavailable';
+
+        const buttonClass = person.available ? 'available' : 'unavailable-btn';
+
         li.innerHTML = `
           ${person.name}
-          <button onclick="toggleAvailability('${teamKey}', ${index})">
-            ${person.available ? 'Unavailable' : 'Available'}
+          <button class="${buttonClass}" onclick="toggleAvailability('${teamKey}', ${index})">
+            ${person.available ? 'Available' : 'Unavailable'}
           </button>`;
         list.appendChild(li);
       });

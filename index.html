@@ -57,9 +57,13 @@
   <script>
     let teams = { A: [], B: [] };
 
-    db.ref('teams').once('value').then((snapshot) => {
-      if (snapshot.exists()) {
-        teams = snapshot.val();
+    db.ref('teams').on('value', (snapshot) => {
+  if (snapshot.exists()) {
+    teams = snapshot.val();
+    render('A');
+    render('B');
+  }
+});
         console.log("Loaded existing teams");
       } else {
         console.log("No data found, initializing default teams");

@@ -13,28 +13,28 @@
     button { margin-top: 10px; }
   </style>
 
- <!-- Firebase Compatibility SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics-compat.js"></script>
+  <!-- ✅ Firebase Compat SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics-compat.js"></script>
 
-<script>
-  // ✅ Your Firebase Config
-  const firebaseConfig = {
-    apiKey: "AIzaSyBI1IvsSOGRXss0dTceJQDnkoXfFdhkinc",
-    authDomain: "support-rotation-app.firebaseapp.com",
-    projectId: "support-rotation-app",
-    storageBucket: "support-rotation-app.firebasestorage.app",
-    messagingSenderId: "559311225453",
-    appId: "1:559311225453:web:15e121172a5a042ea8b564",
-    measurementId: "G-DR1V84QY22"
-  };
+  <script>
+    // ✅ Your Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyBI1IvsSOGRXss0dTceJQDnkoXfFdhkinc",
+      authDomain: "support-rotation-app.firebaseapp.com",
+      projectId: "support-rotation-app",
+      storageBucket: "support-rotation-app.firebasestorage.app",
+      messagingSenderId: "559311225453",
+      appId: "1:559311225453:web:15e121172a5a042ea8b564",
+      measurementId: "G-DR1V84QY22"
+    };
 
-  // ✅ Initialize Firebase
-  firebase.initializeApp(firebaseConfig);
-  firebase.analytics();
-  const db = firebase.database();
-</script>
+    // ✅ Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    firebase.analytics();
+    const db = firebase.database();
+  </script>
 </head>
 <body>
   <h2>Support Rotation</h2>
@@ -56,21 +56,12 @@
   <script>
     let teams = { A: [], B: [] };
 
-    // 🔁 Load initial or live team data
-    db.ref('teams').on('value', (snapshot) => {
-  if (snapshot.exists()) {
-    teams = snapshot.val();
-  } else {
-    teams = { /* ...default arrays...*/ };
-+   console.log('Initializing default teams…');
-    db.ref('teams').set(teams)
-      .then(() => console.log('Default teams saved'))
-      .catch(err => console.error('Save failed', err));
-  }
-  render('A');
-  render('B');
-});
-        // First-time default initialization
+    db.ref('teams').once('value').then((snapshot) => {
+      if (snapshot.exists()) {
+        teams = snapshot.val();
+        console.log("Loaded existing teams");
+      } else {
+        console.log("No data found, initializing default teams");
         teams = {
           A: [
             { name: 'Lynnette', available: true },
@@ -89,6 +80,8 @@
         };
         db.ref('teams').set(teams);
       }
+      render('A');
+      render('B');
     });
 
     function render(teamKey) {
@@ -107,11 +100,11 @@
     function toggleAvailability(teamKey, index) {
       teams[teamKey][index].available = !teams[teamKey][index].available;
       db.ref('teams').set(teams);
+      render(teamKey);
     }
 
     function assignNext(teamKey) {
       let team = teams[teamKey];
-
       if (team[0].available) {
         const person = team.shift();
         team.push(person);
@@ -135,6 +128,7 @@
       }
 
       db.ref('teams').set(teams);
+      render(teamKey);
     }
 
     function showAssignment(message) {

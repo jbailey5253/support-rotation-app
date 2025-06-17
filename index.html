@@ -58,10 +58,18 @@
 
     // 🔁 Load initial or live team data
     db.ref('teams').on('value', (snapshot) => {
-      if (snapshot.exists()) {
-        teams = snapshot.val();
-        render('A');
-        render('B');
+  if (snapshot.exists()) {
+    teams = snapshot.val();
+  } else {
+    teams = { /* ...default arrays...*/ };
++   console.log('Initializing default teams…');
+    db.ref('teams').set(teams)
+      .then(() => console.log('Default teams saved'))
+      .catch(err => console.error('Save failed', err));
+  }
+  render('A');
+  render('B');
+});
       } else {
         // First-time default initialization
         teams = {

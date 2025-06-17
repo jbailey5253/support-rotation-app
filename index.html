@@ -1,39 +1,56 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Support Rotation App</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #f0f0f0;
-      color: #333;
-      transition: background-color 0.3s, color 0.3s;
+    :root {
+      --bg-color: #f3f4f6;
+      --text-color: #1f2937;
+      --card-bg: #ffffff;
+      --hover-bg: #f3f4f6;
+      --muted: #9ca3af;
+      --heading-color: #111827;
     }
 
     body.dark {
-      background-color: #121212;
-      color: #f0f0f0;
+      --bg-color: #1f2937;
+      --text-color: #f3f4f6;
+      --card-bg: #374151;
+      --hover-bg: #4b5563;
+      --muted: #9ca3af;
+      --heading-color: #ffffff;
+    }
+
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 20px;
+      transition: background-color 0.3s, color 0.3s;
     }
 
     header {
-      text-align: center;
-      padding: 20px;
-      font-size: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      color: var(--heading-color);
     }
 
     .theme-toggle {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      background-color: #444;
+      background-color: #6b7280;
       color: white;
       border: none;
-      padding: 8px 12px;
+      padding: 8px 14px;
+      border-radius: 6px;
       cursor: pointer;
-      border-radius: 5px;
+      font-size: 14px;
     }
 
     .teams {
@@ -41,102 +58,109 @@
       justify-content: center;
       gap: 40px;
       flex-wrap: wrap;
-      padding: 20px;
+      margin-top: 30px;
     }
 
     .team {
-      background-color: white;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      padding: 16px;
-      width: 300px;
+      background-color: var(--card-bg);
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+      width: 280px;
       transition: background-color 0.3s;
     }
 
-    body.dark .team {
-      background-color: #1e1e1e;
-      border-color: #333;
-    }
-
-    h2 {
+    .team h2 {
       text-align: center;
-      margin-bottom: 12px;
+      color: #2563eb;
+      border-bottom: 2px solid #e5e7eb;
+      padding-bottom: 10px;
+      margin-bottom: 20px;
     }
 
     ul {
       list-style: none;
       padding: 0;
-      margin: 0;
+      margin: 0 0 20px 0;
     }
 
-    li.available {
-  background-color: #d4edda;
-  color: #155724;
-}
+    li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 8px;
+      margin-bottom: 8px;
+      border-radius: 6px;
+      background-color: var(--hover-bg);
+      transition: background-color 0.2s ease;
+    }
 
-li.unavailable {
-  background-color: #f8d7da;
-  color: #721c24;
-  opacity: 0.6;
-  text-decoration: line-through;
-}
+    li.unavailable {
+      color: var(--muted);
+      text-decoration: line-through;
+    }
 
-body.dark li.available {
-  background-color: #2e4d3d;
-  color: #c3f5d2;
-}
-
-body.dark li.unavailable {
-  background-color: #4f2d31;
-  color: #f5c6cb;
-}
-
-li.top-person {
-  border: 2px solid #007bff;
-  font-weight: bold;
-  box-shadow: 0 0 10px rgba(0, 123, 255, 0.7);
-  background-color: #cce5ff !important;
-}
-
-body.dark li.top-person {
-  background-color: #203750 !important;
-  color: #dceeff;
-  border-color: #3399ff;
-}
     button {
-      padding: 6px 10px;
       border: none;
-      border-radius: 4px;
+      border-radius: 6px;
+      padding: 6px 10px;
       cursor: pointer;
-    }
-
-    .available-btn {
-      background-color: #dc3545;
-      color: white;
-    }
-
-    .unavailable-btn {
-      background-color: #28a745;
-      color: white;
+      font-size: 14px;
+      font-weight: 500;
     }
 
     .assign-button {
-      margin-top: 10px;
-      width: 100%;
-      background-color: #007bff;
+      background-color: #2563eb;
       color: white;
+      margin-top: 10px;
+    }
+
+    .assign-button:hover {
+      background-color: #1d4ed8;
+    }
+
+    .available {
+      background-color: #10b981;
+      color: white;
+    }
+
+    .available:hover {
+      background-color: #059669;
+    }
+
+    .unavailable-btn {
+      background-color: #ef4444;
+      color: white;
+    }
+
+    .unavailable-btn:hover {
+      background-color: #dc2626;
     }
 
     #assignment {
       text-align: center;
-      font-size: 18px;
-      margin-top: 20px;
+      font-weight: 500;
+      margin-top: 30px;
+      font-size: 16px;
+    }
+
+    @media (max-width: 640px) {
+      .teams {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .team {
+        width: 90%;
+      }
     }
   </style>
 </head>
 <body>
-  <button class="theme-toggle" onclick="toggleTheme()">Toggle Theme</button>
-  <header>Support Rotation App</header>
+  <header>
+    <h1>Support Rotation App</h1>
+    <button class="theme-toggle" onclick="toggleTheme()">Toggle Theme</button>
+  </header>
 
   <div class="teams">
     <div class="team" id="teamA">
@@ -150,10 +174,9 @@ body.dark li.top-person {
       <button class="assign-button" onclick="assignNext('B')">Assign Next</button>
     </div>
   </div>
+  <p id="assignment"></p>
 
-  <div id="assignment"></div>
-
-  <!-- Firebase -->
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
@@ -161,9 +184,9 @@ body.dark li.top-person {
     const firebaseConfig = {
       apiKey: "AIzaSyBI1IvsSOGRXss0dTceJQDnkoXfFdhkinc",
       authDomain: "support-rotation-app.firebaseapp.com",
-      databaseURL: "https://support-rotation-app-default-rtdb.firebaseio.com",
+      databaseURL: "https://support-rotation-app-default-rtdb.firebaseio.com/",
       projectId: "support-rotation-app",
-      storageBucket: "support-rotation-app.appspot.com",
+      storageBucket: "support-rotation-app.firebasestorage.app",
       messagingSenderId: "559311225453",
       appId: "1:559311225453:web:15e121172a5a042ea8b564",
       measurementId: "G-DR1V84QY22"
@@ -172,33 +195,48 @@ body.dark li.top-person {
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let teams = { A: [], B: [] };
+    let teams = {
+      A: [
+        { name: "Lynnette", available: true },
+        { name: "Dack", available: true },
+        { name: "Shay", available: true },
+        { name: "Dami", available: true },
+        { name: "Anna", available: true },
+      ],
+      B: [
+        { name: "Jake", available: true },
+        { name: "Tyler", available: true },
+        { name: "David", available: true },
+        { name: "Zachary", available: true },
+        { name: "Paul", available: true },
+      ],
+    };
 
     db.ref('teams').on('value', (snapshot) => {
       if (snapshot.exists()) {
         teams = snapshot.val();
         render('A');
         render('B');
-        localStorage.setItem('teams', JSON.stringify(teams));
       }
     });
 
     function render(teamKey) {
-      const ul = document.getElementById('list' + teamKey);
-      ul.innerHTML = '';
-      teams[teamKey].forEach((person, index) => {
+      const team = teams[teamKey];
+      const list = document.getElementById(teamKey === 'A' ? 'listA' : 'listB');
+      list.innerHTML = '';
+
+      team.forEach((person, index) => {
         const li = document.createElement('li');
-        li.className = person.available ? 'available' : 'unavailable';
-        if (index === 0) li.classList.add('top-person');
+        li.className = person.available ? '' : 'unavailable';
 
-        const toggleBtn = document.createElement('button');
-        toggleBtn.innerText = person.available ? 'Unavailable' : 'Available';
-        toggleBtn.className = person.available ? 'available-btn' : 'unavailable-btn';
-        toggleBtn.onclick = () => toggleAvailability(teamKey, index);
+        const buttonClass = person.available ? 'available' : 'unavailable-btn';
 
-        li.innerHTML = person.name;
-        li.appendChild(toggleBtn);
-        ul.appendChild(li);
+        li.innerHTML = `
+          ${person.name}
+          <button class="${buttonClass}" onclick="toggleAvailability('${teamKey}', ${index})">
+            ${person.available ? 'Available' : 'Unavailable'}
+          </button>`;
+        list.appendChild(li);
       });
     }
 
@@ -208,40 +246,51 @@ body.dark li.top-person {
     }
 
     function assignNext(teamKey) {
-      const team = teams[teamKey];
-      const top = team[0];
+      let team = teams[teamKey];
 
-      let message = "No one available to assign.";
-      if (top.available) {
-        team.push(team.shift());
-        message = `${team[team.length - 1].name} is assigned the ticket.`;
+      if (team[0].available) {
+        const person = team.shift();
+        team.push(person);
+        showAssignment(`${person.name} is assigned the ticket.`);
       } else {
-        let nextAvailableIndex = team.findIndex((p, i) => i > 0 && p.available);
-        if (nextAvailableIndex !== -1) {
-          const person = team.splice(nextAvailableIndex, 1)[0];
-          team.push(person);
-          message = `${person.name} is assigned the ticket (top person unavailable).`;
+        let assignedIndex = -1;
+        for (let i = 1; i < team.length; i++) {
+          if (team[i].available) {
+            assignedIndex = i;
+            break;
+          }
+        }
+
+        if (assignedIndex !== -1) {
+          const assignedPerson = team.splice(assignedIndex, 1)[0];
+          team.push(assignedPerson);
+          showAssignment(`${assignedPerson.name} is assigned the ticket (top person unavailable).`);
+        } else {
+          showAssignment("No available team members.");
         }
       }
 
       db.ref('teams').set(teams);
-      document.getElementById('assignment').innerText = message;
+    }
+
+    function showAssignment(msg) {
+      document.getElementById('assignment').innerText = msg;
     }
 
     function toggleTheme() {
       document.body.classList.toggle('dark');
-      localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+      localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
     }
 
-    if (localStorage.getItem('darkMode') === 'true') {
-      document.body.classList.add('dark');
+    function loadTheme() {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'dark') {
+        document.body.classList.add('dark');
+      }
     }
 
-    if (!navigator.onLine && localStorage.getItem('teams')) {
-      teams = JSON.parse(localStorage.getItem('teams'));
-      render('A');
-      render('B');
-    }
+    // Load saved theme on startup
+    loadTheme();
   </script>
 </body>
 </html>

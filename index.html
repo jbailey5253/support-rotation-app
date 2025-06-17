@@ -4,17 +4,53 @@
   <meta charset="UTF-8">
   <title>Support Rotation App</title>
   <style>
+    :root {
+      --bg-color: #f3f4f6;
+      --text-color: #1f2937;
+      --card-bg: #ffffff;
+      --hover-bg: #f3f4f6;
+      --muted: #9ca3af;
+      --heading-color: #111827;
+    }
+
+    body.dark {
+      --bg-color: #1f2937;
+      --text-color: #f3f4f6;
+      --card-bg: #374151;
+      --hover-bg: #4b5563;
+      --muted: #9ca3af;
+      --heading-color: #ffffff;
+    }
+
     body {
       font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f3f4f6;
+      background-color: var(--bg-color);
+      color: var(--text-color);
       margin: 0;
       padding: 20px;
-      color: #1f2937;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 900px;
+      margin: 0 auto;
     }
 
     h1 {
-      text-align: center;
-      color: #111827;
+      color: var(--heading-color);
+    }
+
+    .theme-toggle {
+      background-color: #6b7280;
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
     }
 
     .teams {
@@ -26,11 +62,12 @@
     }
 
     .team {
-      background-color: white;
+      background-color: var(--card-bg);
       padding: 20px;
       border-radius: 12px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.05);
       width: 280px;
+      transition: background-color 0.3s;
     }
 
     .team h2 {
@@ -54,16 +91,12 @@
       padding: 10px 8px;
       margin-bottom: 8px;
       border-radius: 6px;
-      background-color: #f9fafb;
+      background-color: var(--hover-bg);
       transition: background-color 0.2s ease;
     }
 
-    li:hover {
-      background-color: #f3f4f6;
-    }
-
     li.unavailable {
-      color: #9ca3af;
+      color: var(--muted);
       text-decoration: line-through;
     }
 
@@ -124,7 +157,11 @@
   </style>
 </head>
 <body>
-  <h1>Support Rotation App</h1>
+  <header>
+    <h1>Support Rotation App</h1>
+    <button class="theme-toggle" onclick="toggleTheme()">Toggle Theme</button>
+  </header>
+
   <div class="teams">
     <div class="team" id="teamA">
       <h2>DEMS</h2>
@@ -139,7 +176,7 @@
   </div>
   <p id="assignment"></p>
 
-  <!-- Firebase Scripts -->
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
@@ -239,6 +276,21 @@
     function showAssignment(msg) {
       document.getElementById('assignment').innerText = msg;
     }
+
+    function toggleTheme() {
+      document.body.classList.toggle('dark');
+      localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+    }
+
+    function loadTheme() {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'dark') {
+        document.body.classList.add('dark');
+      }
+    }
+
+    // Load saved theme on startup
+    loadTheme();
   </script>
 </body>
 </html>

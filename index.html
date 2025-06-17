@@ -2,102 +2,108 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Support Rotation</title>
+  <title>Support Rotation App</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: auto; }
-    .list { margin: 20px 0; }
-    .list ul { list-style-type: none; padding: 0; }
-    .list li { padding: 5px; cursor: pointer; }
-    .top-name { font-weight: bold; color: green; }
-    .unavailable { color: red; text-decoration: line-through; }
-    button { margin-top: 10px; }
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    .team {
+      display: inline-block;
+      margin: 20px;
+      vertical-align: top;
+    }
+    .team h2 {
+      margin-bottom: 10px;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      margin: 5px 0;
+    }
+    .unavailable {
+      color: gray;
+      text-decoration: line-through;
+    }
+    button {
+      margin-top: 10px;
+    }
   </style>
-
-  <!-- ✅ Firebase Compat SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics-compat.js"></script>
-
-  <script>
-    // ✅ Your Firebase Config
-    const firebaseConfig = {
-  apiKey: "AIzaSyBI1IvsSOGRXss0dTceJQDnkoXfFdhkinc",
-  authDomain: "support-rotation-app.firebaseapp.com",
-  databaseURL: "https://support-rotation-app-default-rtdb.firebaseio.com/",
-  projectId: "support-rotation-app",
-  storageBucket: "support-rotation-app.firebasestorage.app",
-  messagingSenderId: "559311225453",
-  appId: "1:559311225453:web:15e121172a5a042ea8b564",
-  measurementId: "G-DR1V84QY22"
-};
-
-    // ✅ Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    firebase.analytics();
-    const db = firebase.database();
-  </script>
 </head>
 <body>
-  <h2>Support Rotation</h2>
-
-  <div class="list">
-    <h3>Team DEMS</h3>
-    <ul id="teamA"></ul>
-    <button onclick="assignNext('A')">Assign Next Ticket (DEMS)</button>
+  <h1>Support Rotation App</h1>
+  <div class="teams">
+    <div class="team" id="teamA">
+      <h2>DEMS</h2>
+      <ul id="listA"></ul>
+      <button onclick="assignNext('A')">Assign Next</button>
+    </div>
+    <div class="team" id="teamB">
+      <h2>Aware</h2>
+      <ul id="listB"></ul>
+      <button onclick="assignNext('B')">Assign Next</button>
+    </div>
   </div>
+  <p id="assignment"></p>
 
-  <div class="list">
-    <h3>Team Aware</h3>
-    <ul id="teamB"></ul>
-    <button onclick="assignNext('B')">Assign Next Ticket (Aware)</button>
-  </div>
-
-  <div id="assignment-msg" style="margin-top: 20px; font-weight: bold;"></div>
+  <!-- Firebase Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
   <script>
-    let teams = { A: [], B: [] };
+    // Your Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyBI1IvsSOGRXss0dTceJQDnkoXfFdhkinc",
+      authDomain: "support-rotation-app.firebaseapp.com",
+      databaseURL: "https://support-rotation-app-default-rtdb.firebaseio.com/",
+      projectId: "support-rotation-app",
+      storageBucket: "support-rotation-app.firebasestorage.app",
+      messagingSenderId: "559311225453",
+      appId: "1:559311225453:web:15e121172a5a042ea8b564",
+      measurementId: "G-DR1V84QY22"
+    };
 
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let teams = {
+      A: [
+        { name: "Lynnette", available: true },
+        { name: "Dack", available: true },
+        { name: "Shay", available: true },
+        { name: "Dami", available: true },
+        { name: "Anna", available: true },
+      ],
+      B: [
+        { name: "Jake", available: true },
+        { name: "Tyler", available: true },
+        { name: "David", available: true },
+        { name: "Zachary", available: true },
+        { name: "Paul", available: true },
+      ],
+    };
+
+    // Real-time listener
     db.ref('teams').on('value', (snapshot) => {
-  if (snapshot.exists()) {
-    teams = snapshot.val();
-    render('A');
-    render('B');
-  }
-});
-        console.log("Loaded existing teams");
-      } else {
-        console.log("No data found, initializing default teams");
-        teams = {
-          A: [
-            { name: 'Lynnette', available: true },
-            { name: 'Dack', available: true },
-            { name: 'Shay', available: true },
-            { name: 'Dami', available: true },
-            { name: 'Anna', available: true }
-          ],
-          B: [
-            { name: 'Jake', available: true },
-            { name: 'Tyler', available: true },
-            { name: 'David', available: true },
-            { name: 'Zachary', available: true },
-            { name: 'Paul', available: true }
-          ]
-        };
-        db.ref('teams').set(teams);
+      if (snapshot.exists()) {
+        teams = snapshot.val();
+        render('A');
+        render('B');
       }
-      render('A');
-      render('B');
     });
 
     function render(teamKey) {
-      const list = document.getElementById(`team${teamKey}`);
+      const team = teams[teamKey];
+      const list = document.getElementById(teamKey === 'A' ? 'listA' : 'listB');
       list.innerHTML = '';
-      teams[teamKey].forEach((person, index) => {
+
+      team.forEach((person, index) => {
         const li = document.createElement('li');
-        li.className = index === 0 ? 'top-name' : '';
-        if (!person.available) li.classList.add('unavailable');
-        li.textContent = person.name + (index === 0 ? ' (Next)' : '');
-        li.onclick = () => toggleAvailability(teamKey, index);
+        li.className = person.available ? '' : 'unavailable';
+        li.innerHTML = `${person.name} <button onclick="toggleAvailability('${teamKey}', ${index})">${person.available ? 'Set Unavailable' : 'Set Available'}</button>`;
         list.appendChild(li);
       });
     }
@@ -105,40 +111,38 @@
     function toggleAvailability(teamKey, index) {
       teams[teamKey][index].available = !teams[teamKey][index].available;
       db.ref('teams').set(teams);
-      render(teamKey);
     }
 
-function assignNext(teamKey) {
-  let team = teams[teamKey];
+    function assignNext(teamKey) {
+      let team = teams[teamKey];
 
-  if (team[0].available) {
-    const person = team.shift();
-    team.push(person);
-    showAssignment(`${person.name} is assigned the ticket.`);
-  } else {
-    let assignedIndex = -1;
-    for (let i = 1; i < team.length; i++) {
-      if (team[i].available) {
-        assignedIndex = i;
-        break;
+      if (team[0].available) {
+        const person = team.shift();
+        team.push(person);
+        showAssignment(`${person.name} is assigned the ticket.`);
+      } else {
+        let assignedIndex = -1;
+        for (let i = 1; i < team.length; i++) {
+          if (team[i].available) {
+            assignedIndex = i;
+            break;
+          }
+        }
+
+        if (assignedIndex !== -1) {
+          const assignedPerson = team.splice(assignedIndex, 1)[0];
+          team.push(assignedPerson);
+          showAssignment(`${assignedPerson.name} is assigned the ticket (top person unavailable).`);
+        } else {
+          showAssignment("No available team members.");
+        }
       }
+
+      db.ref('teams').set(teams);
     }
 
-    if (assignedIndex !== -1) {
-      const assignedPerson = team.splice(assignedIndex, 1)[0];
-      team.push(assignedPerson);
-      showAssignment(`${assignedPerson.name} is assigned the ticket (top person unavailable).`);
-    } else {
-      showAssignment("No available team members.");
-    }
-  }
-
-  db.ref('teams').set(teams);
-  render(teamKey);
-}
-
-    function showAssignment(message) {
-      document.getElementById("assignment-msg").textContent = message;
+    function showAssignment(msg) {
+      document.getElementById('assignment').innerText = msg;
     }
   </script>
 </body>

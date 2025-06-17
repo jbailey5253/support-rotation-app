@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Support Ticket Rotation</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    .list { margin: 20px 0; }
+    .list ul { list-style-type: none; padding: 0; }
+    .list li { padding: 5px; }
+    .top-name { font-weight: bold; color: green; }
+    .unavailable { color: red; text-decoration: line-through; }
+  </style>
+</head>
+<body>
+
+  <h2>Support Rotation</h2>
+
+  <div class="list">
+    <h3>Team A</h3>
+    <ul id="teamA"></ul>
+    <button onclick="assignNext('A')">Assign Next Ticket (Team A)</button>
+  </div>
+
+  <div class="list">
+    <h3>Team B</h3>
+    <ul id="teamB"></ul>
+    <button onclick="assignNext('B')">Assign Next Ticket (Team B)</button>
+  </div>
+
+  <script>
+    const teams = {
+      A: [
+        { name: 'Alice', available: true },
+        { name: 'Bob', available: true },
+        { name: 'Charlie', available: true }
+      ],
+      B: [
+        { name: 'Dana', available: true },
+        { name: 'Eli', available: true },
+        { name: 'Fay', available: true }
+      ]
+    };
+
+    function render(teamKey) {
+      const list = document.getElementById(`team${teamKey}`);
+      list.innerHTML = '';
+      teams[teamKey].forEach((person, index) => {
+        const li = document.createElement('li');
+        li.className = index === 0 ? 'top-name' : '';
+        if (!person.available) li.classList.add('unavailable');
+        li.textContent = person.name + (index === 0 ? ' (Next)' : '');
+        li.onclick = () => toggleAvailability(teamKey, index);
+        list.appendChild(li);
+      });
+    }
+
+    function toggleAvailability(teamKey, index) {
+      teams[teamKey][index].available = !teams[teamKey][index].available;
+      render(teamKey);
+    }
+
+    function assignNext(teamKey) {
+      let team = teams[teamKey];
+      if (team[0].available) {
+        // Rotate the top person to the bottom
+        const person = team.shift();
+        team.push(person);
+      } else {
+        // Find the next available
+        for (let i = 1; i < team.length; i++) {
+          if (team[i].available) {
+            alert(`${team[i].name} is assigned the ticket (top person unavailable).`);
+            return;
+          }
+        }
+        alert("No available members in the team.");
+        return;
+      }
+      render(teamKey);
+    }
+
+    // Initial render
+    render('A');
+    render('B');
+  </script>
+
+</body>
+</html>

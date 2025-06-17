@@ -64,25 +64,46 @@
       render(teamKey);
     }
 
-    function assignNext(teamKey) {
-      let team = teams[teamKey];
-      if (team[0].available) {
-        // Rotate the top person to the bottom
-        const person = team.shift();
-        team.push(person);
-      } else {
-        // Find the next available
-        for (let i = 1; i < team.length; i++) {
-          if (team[i].available) {
-            alert(`${team[i].name} is assigned the ticket (top person unavailable).`);
-            return;
-          }
-        }
-        alert("No available members in the team.");
-        return;
+function assignNext(teamKey) {
+  let team = teams[teamKey];
+
+  if (team[0].available) {
+    // Top person is available: rotate them to bottom
+    const person = team.shift();
+    team.push(person);
+    showAssignment(`${person.name} is assigned the ticket.`);
+  } else {
+    // Top person is unavailable: find next available (starting at index 1)
+    let assignedIndex = -1;
+    for (let i = 1; i < team.length; i++) {
+      if (team[i].available) {
+        assignedIndex = i;
+        break;
       }
-      render(teamKey);
     }
+
+    if (assignedIndex !== -1) {
+      const assignedPerson = team.splice(assignedIndex, 1)[0]; // Remove from current spot
+      team.push(assignedPerson); // Add to end
+      showAssignment(`${assignedPerson.name} is assigned the ticket (top person unavailable).`);
+    } else {
+      showAssignment("No available team members.");
+    }
+  }
+
+  render(teamKey);
+}
+    function showAssignment(message) {
+  let div = document.getElementById("assignment-msg");
+  if (!div) {
+    div = document.createElement("div");
+    div.id = "assignment-msg";
+    div.style.marginTop = "20px";
+    div.style.fontWeight = "bold";
+    document.body.appendChild(div);
+  }
+  div.textContent = message;
+}
 
     // Initial render
     render('A');

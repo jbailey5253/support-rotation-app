@@ -5,30 +5,98 @@
   <title>Support Rotation App</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f3f4f6;
+      margin: 0;
       padding: 20px;
+      color: #1f2937;
     }
+
+    h1 {
+      text-align: center;
+      color: #111827;
+    }
+
+    .teams {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      flex-wrap: wrap;
+      margin-top: 30px;
+    }
+
     .team {
-      display: inline-block;
-      margin: 20px;
-      vertical-align: top;
+      background-color: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+      width: 280px;
     }
+
     .team h2 {
-      margin-bottom: 10px;
+      text-align: center;
+      color: #2563eb;
+      border-bottom: 2px solid #e5e7eb;
+      padding-bottom: 10px;
+      margin-bottom: 20px;
     }
+
     ul {
       list-style: none;
       padding: 0;
+      margin: 0 0 20px 0;
     }
+
     li {
-      margin: 5px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 8px;
+      margin-bottom: 8px;
+      border-radius: 6px;
+      background-color: #f9fafb;
+      transition: background-color 0.2s ease;
     }
-    .unavailable {
-      color: gray;
+
+    li:hover {
+      background-color: #f3f4f6;
+    }
+
+    li.unavailable {
+      color: #9ca3af;
       text-decoration: line-through;
     }
+
     button {
-      margin-top: 10px;
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 12px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    button:hover {
+      background-color: #1d4ed8;
+    }
+
+    #assignment {
+      text-align: center;
+      font-weight: 500;
+      margin-top: 30px;
+      font-size: 16px;
+    }
+
+    @media (max-width: 640px) {
+      .teams {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .team {
+        width: 90%;
+      }
     }
   </style>
 </head>
@@ -53,7 +121,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
   <script>
-    // Your Firebase configuration
     const firebaseConfig = {
       apiKey: "AIzaSyBI1IvsSOGRXss0dTceJQDnkoXfFdhkinc",
       authDomain: "support-rotation-app.firebaseapp.com",
@@ -65,7 +132,6 @@
       measurementId: "G-DR1V84QY22"
     };
 
-    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
@@ -86,7 +152,6 @@
       ],
     };
 
-    // Real-time listener
     db.ref('teams').on('value', (snapshot) => {
       if (snapshot.exists()) {
         teams = snapshot.val();
@@ -103,7 +168,11 @@
       team.forEach((person, index) => {
         const li = document.createElement('li');
         li.className = person.available ? '' : 'unavailable';
-        li.innerHTML = `${person.name} <button onclick="toggleAvailability('${teamKey}', ${index})">${person.available ? 'Set Unavailable' : 'Set Available'}</button>`;
+        li.innerHTML = `
+          ${person.name}
+          <button onclick="toggleAvailability('${teamKey}', ${index})">
+            ${person.available ? 'Unavailable' : 'Available'}
+          </button>`;
         list.appendChild(li);
       });
     }

@@ -35,6 +35,45 @@
       transition: background-color 0.3s, color 0.3s;
     }
 
+    #username-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.75);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    #username-modal-inner {
+      background-color: var(--card-bg);
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+      text-align: center;
+      max-width: 300px;
+    }
+
+    #username-modal input {
+      padding: 10px;
+      width: 100%;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      margin-bottom: 12px;
+    }
+
+    #username-modal button {
+      padding: 10px 20px;
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
     header {
       display: flex;
       justify-content: space-between;
@@ -177,9 +216,17 @@
   </style>
 </head>
 <body>
-  <button class="theme-toggle" onclick="toggleTheme()">Toggle Theme</button>
+  <div id="username-modal">
+    <div id="username-modal-inner">
+      <h3>Please enter your display name</h3>
+      <input type="text" id="username-input" placeholder="Your name">
+      <button onclick="saveUsername()">Continue</button>
+    </div>
+  </div>
+
   <header>
     <h1>CC Transfer Rotation</h1>
+    <button class="theme-toggle" onclick="toggleTheme()">Toggle Theme</button>
   </header>
 
   <div class="teams">
@@ -195,6 +242,11 @@
     </div>
   </div>
   <p id="assignment"></p>
+
+  <div id="history-log">
+    <h2>Change History</h2>
+    <ul id="history-list"></ul>
+  </div>
 
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -215,24 +267,9 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let teams = {
-      A: [
-        { name: "Lynnette", available: true },
-        { name: "Dack", available: true },
-        { name: "Shay", available: true },
-        { name: "Dami", available: true },
-        { name: "Anna", available: true },
-      ],
-      B: [
-        { name: "Jake", available: true },
-        { name: "Tyler", available: true },
-        { name: "David", available: true },
-        { name: "Zachary", available: true },
-        { name: "Paul", available: true },
-      ],
-    };
+    let teams = {};
 
-    db.ref('teams').on('value', (snapshot) => {
+    db.ref('teams').on('value', snapshot => {
       if (snapshot.exists()) {
         teams = snapshot.val();
         render('A');
@@ -245,25 +282,18 @@
       const list = document.getElementById(teamKey === 'A' ? 'listA' : 'listB');
       list.innerHTML = '';
 
-      const nextAvailableIndex = team.findIndex(person => person.available);
+      const nextAvailableIndex = team.findIndex(p => p.available);
 
       team.forEach((person, index) => {
         const li = document.createElement('li');
-        const isAvailable = person.available;
-
-        li.className = isAvailable ? '' : 'unavailable';
-        if (index === nextAvailableIndex && isAvailable) {
-          li.classList.add('highlight');
-        } else if (index !== nextAvailableIndex) {
-          li.classList.add('faded');
-        }
-
-        const buttonClass = isAvailable ? 'available' : 'unavailable-btn';
+        li.className = person.available ? '' : 'unavailable';
+        if (index === nextAvailableIndex && person.available) li.classList.add('highlight');
+        else if (index !== nextAvailableIndex) li.classList.add('faded');
 
         li.innerHTML = `
           ${person.name}
-          <button class="${buttonClass}" onclick="toggleAvailability('${teamKey}', ${index})">
-            ${isAvailable ? 'Available' : 'Unavailable'}
+          <button class="${person.available ? 'available' : 'unavailable-btn'}" onclick="toggleAvailability('${teamKey}', ${index})">
+            ${person.available ? 'Available' : 'Unavailable'}
           </button>`;
 
         list.appendChild(li);
@@ -271,35 +301,31 @@
     }
 
     function toggleAvailability(teamKey, index) {
-      teams[teamKey][index].available = !teams[teamKey][index].available;
+      const name = teams[teamKey][index].name;
+      const newStatus = !teams[teamKey][index].available;
+      teams[teamKey][index].available = newStatus;
       db.ref('teams').set(teams);
+      logChange(`${name} marked as ${newStatus ? 'Available' : 'Unavailable'} on ${teamKey}`);
     }
 
     function assignNext(teamKey) {
-      let team = teams[teamKey];
-
+      const team = teams[teamKey];
       if (team[0].available) {
         const person = team.shift();
         team.push(person);
         showAssignment(`${person.name} is assigned the ticket.`);
+        logChange(`${person.name} assigned a ticket on ${teamKey}`);
       } else {
-        let assignedIndex = -1;
-        for (let i = 1; i < team.length; i++) {
-          if (team[i].available) {
-            assignedIndex = i;
-            break;
-          }
-        }
-
-        if (assignedIndex !== -1) {
-          const assignedPerson = team.splice(assignedIndex, 1)[0];
-          team.push(assignedPerson);
-          showAssignment(`${assignedPerson.name} is assigned the ticket (top person unavailable).`);
+        const idx = team.findIndex((p, i) => i > 0 && p.available);
+        if (idx !== -1) {
+          const assigned = team.splice(idx, 1)[0];
+          team.push(assigned);
+          showAssignment(`${assigned.name} is assigned the ticket (top unavailable).`);
+          logChange(`${assigned.name} assigned a ticket from ${teamKey} (top unavailable)`);
         } else {
           showAssignment("No available team members.");
         }
       }
-
       db.ref('teams').set(teams);
     }
 
@@ -313,13 +339,41 @@
     }
 
     function loadTheme() {
-      const savedTheme = localStorage.getItem('theme');
-      if (savedTheme === 'dark') {
-        document.body.classList.add('dark');
+      const saved = localStorage.getItem('theme');
+      if (saved === 'dark') document.body.classList.add('dark');
+    }
+
+    function getDisplayName() {
+      return localStorage.getItem('username') || 'Unknown';
+    }
+
+    function saveUsername() {
+      const input = document.getElementById('username-input').value.trim();
+      if (input.length > 0) {
+        localStorage.setItem('username', input);
+        document.getElementById('username-modal').style.display = 'none';
       }
     }
 
-    loadTheme();
+    function logChange(action) {
+      const time = new Date().toLocaleString();
+      const user = getDisplayName();
+      const entry = `${time} - ${user}: ${action}`;
+      const li = document.createElement('li');
+      li.innerText = entry;
+      const list = document.getElementById('history-list');
+      list.prepend(li);
+      while (list.children.length > 10) list.removeChild(list.lastChild);
+    }
+
+    window.onload = () => {
+      loadTheme();
+      if (!localStorage.getItem('username')) {
+        document.getElementById('username-modal').style.display = 'flex';
+      } else {
+        document.getElementById('username-modal').style.display = 'none';
+      }
+    }
   </script>
 </body>
 </html>

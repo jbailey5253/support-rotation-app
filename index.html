@@ -11,6 +11,8 @@
       --hover-bg: #f3f4f6;
       --muted: #9ca3af;
       --heading-color: #111827;
+      --highlight-border: #10b981;
+      --highlight-bg: #d1fae5;
     }
 
     body.dark {
@@ -20,6 +22,8 @@
       --hover-bg: #4b5563;
       --muted: #9ca3af;
       --heading-color: #ffffff;
+      --highlight-border: #34d399;
+      --highlight-bg: #065f46;
     }
 
     body {
@@ -92,12 +96,23 @@
       margin-bottom: 8px;
       border-radius: 6px;
       background-color: var(--hover-bg);
-      transition: background-color 0.2s ease;
+      transition: all 0.3s ease;
     }
 
     li.unavailable {
       color: var(--muted);
       text-decoration: line-through;
+    }
+
+    li.highlight {
+      border: 2px solid var(--highlight-border);
+      background-color: var(--highlight-bg);
+      font-weight: bold;
+      transform: scale(1.02);
+    }
+
+    li.faded {
+      opacity: 0.5;
     }
 
     button {
@@ -225,17 +240,27 @@
       const list = document.getElementById(teamKey === 'A' ? 'listA' : 'listB');
       list.innerHTML = '';
 
+      const nextAvailableIndex = team.findIndex(person => person.available);
+
       team.forEach((person, index) => {
         const li = document.createElement('li');
-        li.className = person.available ? '' : 'unavailable';
+        const isAvailable = person.available;
 
-        const buttonClass = person.available ? 'available' : 'unavailable-btn';
+        li.className = isAvailable ? '' : 'unavailable';
+        if (index === nextAvailableIndex && isAvailable) {
+          li.classList.add('highlight');
+        } else if (index !== nextAvailableIndex) {
+          li.classList.add('faded');
+        }
+
+        const buttonClass = isAvailable ? 'available' : 'unavailable-btn';
 
         li.innerHTML = `
           ${person.name}
           <button class="${buttonClass}" onclick="toggleAvailability('${teamKey}', ${index})">
-            ${person.available ? 'Available' : 'Unavailable'}
+            ${isAvailable ? 'Available' : 'Unavailable'}
           </button>`;
+
         list.appendChild(li);
       });
     }
@@ -289,7 +314,6 @@
       }
     }
 
-    // Load saved theme on startup
     loadTheme();
   </script>
 </body>

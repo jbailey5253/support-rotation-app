@@ -243,10 +243,41 @@
   </div>
   <p id="assignment"></p>
 
-  <div id="history-log">
-    <h2>Change History</h2>
-    <ul id="history-list"></ul>
-  </div>
+  <!-- Updated Change Log Toggle Button Version -->
+<div id="history-toggle-container" style="text-align: center; margin-top: 40px;">
+  <button id="toggle-history-button" onclick="toggleChangeLog()">Change Log</button>
+</div>
+
+<div id="history-log" style="display: none;">
+  <h2>Change History</h2>
+  <ul id="history-list"></ul>
+</div>
+
+<style>
+  #toggle-history-button {
+    background-color: #6b7280;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+
+  #toggle-history-button:hover {
+    background-color: #4b5563;
+  }
+</style>
+
+<script>
+  function toggleChangeLog() {
+    const log = document.getElementById('history-log');
+    const btn = document.getElementById('toggle-history-button');
+    const visible = log.style.display === 'block';
+    log.style.display = visible ? 'none' : 'block';
+  }
+</script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
   <script>

@@ -203,6 +203,27 @@
       font-size: 16px;
     }
 
+    #history-log {
+      max-width: 900px;
+      margin: 30px auto;
+      background-color: var(--card-bg);
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    }
+
+    #history-log h2 {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      margin-bottom: 10px;
+    }
+
+    #history-list.collapsed {
+      display: none;
+    }
+
     @media (max-width: 640px) {
       .teams {
         flex-direction: column;
@@ -212,6 +233,11 @@
       .team {
         width: 90%;
       }
+
+      .theme-toggle {
+        position: static;
+        margin-left: 10px;
+      }
     }
   </style>
 </head>
@@ -220,7 +246,7 @@
     <div id="username-modal-inner">
       <h3>Please enter your display name</h3>
       <input type="text" id="username-input" placeholder="Your name">
-      <button onclick="submitDisplayName()">Continue</button>
+      <button onclick="saveUsername()">Continue</button>
     </div>
   </div>
 
@@ -244,11 +270,14 @@
   <p id="assignment"></p>
 
   <div id="history-log">
-    <h2>Change History</h2>
+    <h2 onclick="toggleHistory()">Change History &#x25BC;</h2>
     <ul id="history-list"></ul>
   </div>
+
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyBI1IvsSOGRXss0dTceJQDnkoXfFdhkinc",
@@ -263,6 +292,7 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+
     let teams = {};
 
     db.ref('teams').on('value', snapshot => {
@@ -270,19 +300,6 @@
         teams = snapshot.val();
         render('A');
         render('B');
-      }
-    });
-
-    db.ref('changeLog').on('value', snapshot => {
-      const list = document.getElementById('history-list');
-      list.innerHTML = '';
-      const changes = snapshot.val();
-      if (changes) {
-        Object.values(changes).reverse().slice(0, 10).forEach(entry => {
-          const li = document.createElement('li');
-          li.innerText = entry;
-          list.appendChild(li);
-        });
       }
     });
 
@@ -353,34 +370,41 @@
     }
 
     function getDisplayName() {
-      return localStorage.getItem('displayName') || 'Unknown';
+      return localStorage.getItem('username') || 'Unknown';
+    }
+
+    function saveUsername() {
+      const input = document.getElementById('username-input').value.trim();
+      if (input.length > 0) {
+        localStorage.setItem('username', input);
+        document.getElementById('username-modal').style.display = 'none';
+      }
     }
 
     function logChange(action) {
       const time = new Date().toLocaleString();
       const user = getDisplayName();
       const entry = `${time} - ${user}: ${action}`;
-      const newLogRef = db.ref('changeLog').push();
-      newLogRef.set(entry);
+      const li = document.createElement('li');
+      li.innerText = entry;
+      const list = document.getElementById('history-list');
+      list.prepend(li);
+      while (list.children.length > 10) list.removeChild(list.lastChild);
     }
 
-    function submitDisplayName() {
-      const name = document.getElementById('username-input').value.trim();
-      if (name) {
-        localStorage.setItem('displayName', name);
+    function toggleHistory() {
+      const list = document.getElementById('history-list');
+      list.classList.toggle('collapsed');
+    }
+
+    window.onload = () => {
+      loadTheme();
+      if (!localStorage.getItem('username')) {
+        document.getElementById('username-modal').style.display = 'flex';
+      } else {
         document.getElementById('username-modal').style.display = 'none';
       }
     }
-
-    function checkDisplayName() {
-      const storedName = localStorage.getItem('displayName');
-      if (storedName) {
-        document.getElementById('username-modal').style.display = 'none';
-      }
-    }
-
-    loadTheme();
-    checkDisplayName();
   </script>
 </body>
 </html>
